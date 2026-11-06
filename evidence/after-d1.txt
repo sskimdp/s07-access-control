@@ -1,0 +1,11 @@
+
+### AFTER FIX: D1 same scenario on running API
+# bob -> GET /issues/2
+HTTP/1.1 200 OK
+{"id":2,"author":"bob","department":"sales","title":"VPN access","body":"cannot connect","status":"open"}# alice -> GET /issues/2
+HTTP/1.1 404 Not Found
+# dave -> GET /issues/2
+HTTP/1.1 404 Not Found
+# carol -> GET /issues/2
+HTTP/1.1 200 OK
+{"id":2,"author":"bob","department":"sales","title":"VPN access","body":"cannot connect","status":"open"}

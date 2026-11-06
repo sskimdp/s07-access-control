@@ -1,0 +1,7 @@
+### AFTER FIX: D1 tests
+[xUnit.net 00:00:00.49]     TrackerApi.Tests.AccessTests.Requester_Cannot_Read_Foreign_Attachment [SKIP]
+[xUnit.net 00:00:00.49]     TrackerApi.Tests.AccessTests.Requester_Cannot_Close_Own_Issue [SKIP]
+  Пропущен TrackerApi.Tests.AccessTests.Requester_Cannot_Read_Foreign_Attachment [1 ms]
+  Пропущен TrackerApi.Tests.AccessTests.Requester_Cannot_Close_Own_Issue [1 ms]
+
+Пройден!   : не пройдено     0, пройдено    17, пропущено     2, всего    19, длительность 625 ms. - TrackerApi.Tests.dll (net10.0)

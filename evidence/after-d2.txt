@@ -1,0 +1,14 @@
+
+### AFTER FIX: D2 same scenario on running API
+# 8. alice (requester) tries to close her own issue 1
+HTTP/1.1 403 Forbidden
+# 9. alice reads issue 1 after the attempt
+{"id":1,"author":"alice","department":"sales","title":"Laptop broken","body":"screen flicker","status":"open"}
+# 10. dave (logistics) tries to close bob's issue 2 (sales)
+HTTP/1.1 404 Not Found
+# 11. carol checks issue 2
+{"id":2,"author":"bob","department":"sales","title":"VPN access","body":"cannot connect","status":"open"}
+# 12. PERMITTED: carol (resolver, sales) closes issue 1
+HTTP/1.1 200 OK
+{"id":1,"author":"alice","department":"sales","title":"Laptop broken","body":"screen flicker","status":"closed"}# 13. carol checks issue 1 is closed
+{"id":1,"author":"alice","department":"sales","title":"Laptop broken","body":"screen flicker","status":"closed"}

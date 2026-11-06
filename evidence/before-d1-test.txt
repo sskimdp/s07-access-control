@@ -1,0 +1,15 @@
+### BEFORE FIX: D1 test on ORIGINAL code (commit 673a7fb + unskipped test)
+[xUnit.net 00:00:00.25]     TrackerApi.Tests.AccessTests.Requester_Cannot_Read_Foreign_Issue [FAIL]
+  Не пройден TrackerApi.Tests.AccessTests.Requester_Cannot_Read_Foreign_Issue [46 ms]
+  Сообщение об ошибке:
+   Assert.Equal() Failure: Values differ
+Expected: NotFound
+Actual:   OK
+  Трассировка стека:
+--- End of stack trace from previous location ---
+[xUnit.net 00:00:00.51]     TrackerApi.Tests.AccessTests.Requester_Cannot_Read_Foreign_Attachment [SKIP]
+[xUnit.net 00:00:00.51]     TrackerApi.Tests.AccessTests.Requester_Cannot_Close_Own_Issue [SKIP]
+  Пропущен TrackerApi.Tests.AccessTests.Requester_Cannot_Read_Foreign_Attachment [1 ms]
+  Пропущен TrackerApi.Tests.AccessTests.Requester_Cannot_Close_Own_Issue [1 ms]
+
+Не пройден!: не пройдено     1, пройдено    16, пропущено     2, всего    19, длительность 640 ms. - TrackerApi.Tests.dll (net10.0)

@@ -1,0 +1,18 @@
+### BEFORE FIX: D2 reproduction (close handler is still the original; D1 fix already applied)
+
+# 7. alice reads her issue 1 before
+{"id":1,"author":"alice","department":"sales","title":"Laptop broken","body":"screen flicker","status":"open"}
+
+# 8. alice (requester) tries to close her own issue 1
+HTTP/1.1 200 OK
+{"id":1,"author":"alice","department":"sales","title":"Laptop broken","body":"screen flicker","status":"closed"}
+
+# 9. alice reads issue 1 after the attempt
+{"id":1,"author":"alice","department":"sales","title":"Laptop broken","body":"screen flicker","status":"closed"}
+
+# 10. dave (resolver, logistics) tries to close bob's issue 2 (sales)
+HTTP/1.1 200 OK
+{"id":2,"author":"bob","department":"sales","title":"VPN access","body":"cannot connect","status":"closed"}
+
+# 11. carol (resolver, sales) checks issue 2
+{"id":2,"author":"bob","department":"sales","title":"VPN access","body":"cannot connect","status":"closed"}

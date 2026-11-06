@@ -25,6 +25,22 @@ static User? Current(HttpRequest req, TrackerStore store)
     return string.IsNullOrWhiteSpace(login) ? null : store.FindUser(login);
 }
 
+// Правило чтения обращения (единое для всех маршрутов, которые отдают данные
+// обращения или связанных с ним объектов): заявитель читает только свои
+// обращения, исполнитель и руководитель - обращения своего подразделения.
+static bool CanRead(User me, Issue issue) => me.Role switch
+{
+    Role.Requester => issue.Author == me.Login,
+    Role.Resolver or Role.Manager => issue.Department == me.Department,
+    _ => false
+};
+
+// Правило закрытия обращения: два независимых ограничения. Роль - закрывают
+// только исполнитель и руководитель (заявитель не закрывает даже свое
+// обращение). Подразделение - только обращения своего подразделения.
+static bool CanClose(User me, Issue issue) =>
+    me.Role is Role.Resolver or Role.Manager && issue.Department == me.Department;
+
 app.MapGet("/health", () => Results.Ok(new { status = "ok" }));
 
 // Список своих обращений (штатный путь, здесь доступ ограничен корректно) -
@@ -55,9 +71,9 @@ app.MapGet("/issues/{id:int}", (int id, HttpRequest req, TrackerStore store) =>
     if (me is null) return Results.Unauthorized();
 
     var issue = store.FindIssue(id);
-    if (issue is null) return Results.NotFound();
+    // Д1: недоступное и несуществующее обращение неразличимы - оба дают 404.
+    if (issue is null || !CanRead(me, issue)) return Results.NotFound();
 
-    // REVIEW-1: рассмотрите, какие проверки доступа здесь есть, а каких нет.
     return Results.Ok(issue);
 });
 
@@ -71,9 +87,12 @@ app.MapPost("/issues/{id:int}/close", (int id, HttpRequest req, TrackerStore sto
     if (me is null) return Results.Unauthorized();
 
     var issue = store.FindIssue(id);
-    if (issue is null) return Results.NotFound();
+    // Д2: сначала право видеть объект (невидимое неотличимо от отсутствующего - 404),
+    // затем право на действие над видимым объектом (403). Состояние меняется
+    // только после обеих проверок.
+    if (issue is null || !CanRead(me, issue)) return Results.NotFound();
+    if (!CanClose(me, issue)) return Results.StatusCode(StatusCodes.Status403Forbidden);
 
-    // REVIEW-2: рассмотрите, проверяется ли роль и подразделение.
     issue.Status = "closed";
     return Results.Ok(issue);
 });
@@ -89,9 +108,11 @@ app.MapGet("/attachments/{id:int}", (int id, HttpRequest req, TrackerStore store
     if (me is null) return Results.Unauthorized();
 
     var att = store.FindAttachment(id);
-    if (att is null) return Results.NotFound();
+    // Д3: доступ к вложению определяется правом чтения родительского обращения.
+    // Нет вложения, нет родителя или родитель недоступен - один и тот же ответ 404.
+    var parent = att is null ? null : store.FindIssue(att.IssueId);
+    if (att is null || parent is null || !CanRead(me, parent)) return Results.NotFound();
 
-    // REVIEW-3: рассмотрите, проверяется ли право на родительский объект att.IssueId.
     return Results.Text(att.Content);
 });
 

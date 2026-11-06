@@ -1,0 +1,14 @@
+### BEFORE FIX: D3 reproduction (D1 and D2 fixes already applied; attachment handler is the original)
+
+# 14. alice reads her OWN attachment 10 (normal path)
+HTTP/1.1 200 OK
+CONFIDENTIAL payslip content for alice
+# --- same user bob for all checks below ---
+# bob reads alice's issue 3 (D1 fix works for the issue)
+HTTP/1.1 404 Not Found
+# bob reads attachment 10 of that same issue 3
+HTTP/1.1 200 OK
+CONFIDENTIAL payslip content for alice
+# dave (resolver, logistics) reads attachment 11 of bob's sales issue 2
+HTTP/1.1 200 OK
+vpn connection log for bob

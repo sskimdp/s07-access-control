@@ -107,8 +107,8 @@ public class AccessTests : IDisposable
             (await client.PostAsync("/issues/1/close", null)).StatusCode);
     }
 
-    // Д1: готовый пример. Снимите Skip перед исправлением GET /issues/{id}.
-    [Fact(Skip = "Д1: включить на занятии перед исправлением чтения чужого обращения.")]
+    // Д1: готовый пример. Skip снят: тест должен падать на исходном коде.
+    [Fact]
     public async Task Requester_Cannot_Read_Foreign_Issue()
     {
         using var bob = As("bob");
@@ -122,29 +122,74 @@ public class AccessTests : IDisposable
         Assert.DoesNotContain("cannot connect", await response.Content.ReadAsStringAsync());
     }
 
-    // Д2: завершите проверки, удалите NotImplementedException, снимите Skip.
-    [Fact(Skip = "Д2: закончить негативный тест перед исправлением закрытия обращения.")]
+    // Д2: два независимых ограничения на закрытие - роль и подразделение.
+    // Отказ не должен менять состояние, поэтому статус перечитывается после
+    // каждой попытки.
+    [Fact]
     public async Task Requester_Cannot_Close_Own_Issue()
     {
         using var client = As("alice");
         var before = await client.GetFromJsonAsync<IssueDto>("/issues/1");
         Assert.NotNull(before);
         Assert.Equal("open", before.Status);
+
+        // Ограничение по роли: заявитель не закрывает даже свое обращение.
+        // Обращение для него видимо, поэтому отказ - 403, а не 404.
         var response = await client.PostAsync("/issues/1/close", null);
-        // TODO: проверьте ожидаемый статус отказа; затем повторно прочитайте
-        // обращение и проверьте, что его статус остался open.
-        // Дополните проверкой исполнителя чужого подразделения.
-        throw new NotImplementedException("Допишите проверки отказа и неизменности состояния.");
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        var afterRequester = await client.GetFromJsonAsync<IssueDto>("/issues/1");
+        Assert.NotNull(afterRequester);
+        Assert.Equal("open", afterRequester.Status);
+
+        // Ограничение по подразделению: исполнитель logistics не закрывает
+        // обращение sales. Для него оно невидимо, поэтому 404.
+        using var dave = As("dave");
+        var foreign = await dave.PostAsync("/issues/1/close", null);
+        Assert.Equal(HttpStatusCode.NotFound, foreign.StatusCode);
+
+        // Состояние проверяет правомочный пользователь: после обеих попыток
+        // обращение все еще открыто.
+        using var carol = As("carol");
+        var afterBoth = await carol.GetFromJsonAsync<IssueDto>("/issues/1");
+        Assert.NotNull(afterBoth);
+        Assert.Equal("open", afterBoth.Status);
     }
 
     // Д3: полностью самостоятельная проверка обхода через вложение.
-    [Fact(Skip = "Д3: воспроизвести обход и закончить тест самостоятельно.")]
+    // Правило: доступ к вложению определяется правом чтения родительского
+    // обращения. Вложение 10 принадлежит обращению 3 (alice, sales).
+    [Fact]
     public async Task Requester_Cannot_Read_Foreign_Attachment()
     {
-        // TODO: выберите пользователя и чужое вложение. Убедитесь, что данные
-        // существуют и доступны правомочному пользователю; проверьте отказ
-        // на обращение и на его вложение, отсутствие содержимого в ответе.
-        throw new NotImplementedException("Напишите негативную проверку доступа к вложению.");
+        const string secret = "CONFIDENTIAL payslip content for alice";
+
+        // Данные существуют и доступны правомочным пользователям: автору и
+        // исполнителю того же подразделения (у них есть право читать обращение 3).
+        foreach (var allowed in new[] { "alice", "carol" })
+        {
+            using var permitted = As(allowed);
+            var ok = await permitted.GetAsync("/attachments/10");
+            Assert.Equal(HttpStatusCode.OK, ok.StatusCode);
+            Assert.Equal(secret, await ok.Content.ReadAsStringAsync());
+        }
+
+        // Один и тот же неправомочный пользователь (bob) проверяется на обоих путях:
+        // обращение недоступно, значит недоступно и его вложение.
+        using var bob = As("bob");
+        var issue = await bob.GetAsync("/issues/3");
+        Assert.Equal(HttpStatusCode.NotFound, issue.StatusCode);
+
+        var attachment = await bob.GetAsync("/attachments/10");
+        Assert.Equal(HttpStatusCode.NotFound, attachment.StatusCode);
+        var body = await attachment.Content.ReadAsStringAsync();
+        Assert.DoesNotContain("CONFIDENTIAL", body);
+        Assert.DoesNotContain("payslip", body);
+
+        // Исполнитель другого подразделения тоже не читает чужое вложение.
+        using var dave = As("dave");
+        var foreign = await dave.GetAsync("/attachments/11");
+        Assert.Equal(HttpStatusCode.NotFound, foreign.StatusCode);
+        Assert.DoesNotContain("vpn connection log", await foreign.Content.ReadAsStringAsync());
     }
 
     private record IssueDto(int Id, string Author, string Department, string Title, string Body, string Status);

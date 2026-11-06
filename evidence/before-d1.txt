@@ -1,0 +1,13 @@
+### BEFORE FIX: D1 reproduction (original code, commit 673a7fb)
+
+# 3. bob reads his own issue 2
+HTTP/1.1 200 OK
+{"id":2,"author":"bob","department":"sales","title":"VPN access","body":"cannot connect","status":"open"}
+# 4. alice (requester, another author) reads bob's issue 2
+HTTP/1.1 200 OK
+{"id":2,"author":"bob","department":"sales","title":"VPN access","body":"cannot connect","status":"open"}
+# 6. dave (resolver of ANOTHER department) reads bob's issue 2
+HTTP/1.1 200 OK
+{"id":2,"author":"bob","department":"sales","title":"VPN access","body":"cannot connect","status":"open"}
+# alice's own list (control: filtering exists here)
+[{"id":1,"author":"alice","department":"sales","title":"Laptop broken","body":"screen flicker","status":"open"},{"id":3,"author":"alice","department":"sales","title":"Salary question","body":"sensitive: pay slip mismatch","status":"open"}]

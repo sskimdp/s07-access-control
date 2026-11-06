@@ -1,0 +1,12 @@
+
+### BEFORE FIX: D3 test on ORIGINAL attachment handler
+[xUnit.net 00:00:00.50]     TrackerApi.Tests.AccessTests.Requester_Cannot_Read_Foreign_Attachment [FAIL]
+  Не пройден TrackerApi.Tests.AccessTests.Requester_Cannot_Read_Foreign_Attachment [30 ms]
+  Сообщение об ошибке:
+   Assert.Equal() Failure: Values differ
+Expected: NotFound
+Actual:   OK
+  Трассировка стека:
+--- End of stack trace from previous location ---
+
+Не пройден!: не пройдено     1, пройдено    18, пропущено     0, всего    19, длительность 666 ms. - TrackerApi.Tests.dll (net10.0)

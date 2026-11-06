@@ -1,0 +1,12 @@
+
+### BEFORE FIX: D2 test on ORIGINAL close handler
+[xUnit.net 00:00:00.52]     TrackerApi.Tests.AccessTests.Requester_Cannot_Close_Own_Issue [FAIL]
+  Не пройден TrackerApi.Tests.AccessTests.Requester_Cannot_Close_Own_Issue [30 ms]
+  Сообщение об ошибке:
+   Assert.Equal() Failure: Values differ
+Expected: Forbidden
+Actual:   OK
+  Трассировка стека:
+--- End of stack trace from previous location ---
+
+Не пройден!: не пройдено     1, пройдено    17, пропущено     1, всего    19, длительность 640 ms. - TrackerApi.Tests.dll (net10.0)

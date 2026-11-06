@@ -1,0 +1,19 @@
+
+### AFTER FIX: D3 same scenario on running API
+# 14. alice reads her OWN attachment 10
+HTTP/1.1 200 OK
+CONFIDENTIAL payslip content for alice# carol (resolver, sales) reads attachment 10 (right on parent issue 3)
+HTTP/1.1 200 OK
+CONFIDENTIAL payslip content for alice# --- same user bob ---
+# bob reads alice's issue 3
+HTTP/1.1 404 Not Found
+# bob reads attachment 10
+HTTP/1.1 404 Not Found
+# bob reads his own attachment 11
+HTTP/1.1 200 OK
+vpn connection log for bob# dave (logistics) reads attachment 11
+HTTP/1.1 404 Not Found
+# nonexistent attachment 999 (alice)
+HTTP/1.1 404 Not Found
+# no X-User
+HTTP/1.1 401 Unauthorized
